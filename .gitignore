@@ -1,2 +1,13 @@
-*.class
-*.log
+.idea/
+.cache-main
+.cache-tests
+.classpath
+.project
+.settings/
+bin/
+project/project
+project/target
+/resources
+target/
+/test-resources
+*.swp
