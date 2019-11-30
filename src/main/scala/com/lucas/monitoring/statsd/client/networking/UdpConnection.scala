@@ -1,17 +1,22 @@
 package com.lucas.monitoring.statsd.client.networking
 
 import java.io.Closeable
-import scala.util.control.Exception
-import scala.util.control.NonFatal
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit.MILLISECONDS
-import java.nio.channels.DatagramChannel
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
 import java.net.InetSocketAddress
+import java.nio.ByteBuffer
+import java.nio.channels.DatagramChannel
+import java.nio.charset.Charset
+import java.util.concurrent.TimeUnit.MILLISECONDS
+import java.util.concurrent.{Callable, Executors}
+
 import com.lucas.monitoring.statsd.client.configuration.ClientConfiguration
 
+import scala.util.control.{Exception, NonFatal}
+
+/** Provides an UDP connection to a StatsD server.  The constructor takes an optional function which will be used to handle
+  * non-fatal exceptions (as defined by scala.util.control.NonFatal).  The default handler is a no-op function.
+  *
+  * The underlying socket is a JIT connection, thereby allowing the class to be instantiated without creating the socket.
+  */
 case class UdpConnection(nonFatalHandler: (Throwable => Unit) = (_: Throwable) => {}) extends Closeable with StatsDThreadFactoryProvider {
 
     lazy val configuration: ClientConfiguration = ClientConfiguration
@@ -32,8 +37,7 @@ case class UdpConnection(nonFatalHandler: (Throwable => Unit) = (_: Throwable) =
 
     lazy val executor = Executors.newSingleThreadExecutor(threadFactory)
 
-    /**
-      * Close the UDP socket connection and shutdown the executor.  Once closed, the instance can no longer be used
+    /** Close the UDP socket connection and shutdown the executor.  Once closed, the instance can no longer be used
       * to send messages.
       */
     override def close() = {
@@ -50,8 +54,7 @@ case class UdpConnection(nonFatalHandler: (Throwable => Unit) = (_: Throwable) =
         }
     }
 
-    /**
-      * Send a message over the existing socket.  The message will be scheduled with the executor and control will
+    /** Send a message over the existing socket.  The message will be scheduled with the executor and control will
       * be returned to the caller immediately.
       *
       * @param message Message to send
