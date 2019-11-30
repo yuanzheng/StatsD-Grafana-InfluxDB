@@ -39,5 +39,22 @@ trait StatsDConfiguration {
       */
     def getBoolean(key: String, default: Boolean = false) = (Try(config.getBoolean(getKey(key))) recoverWith { case _ => Success(default) }).get
 
+    /**
+      * Get the configuration integer value for the given key.
+      *    *
+      * @param key The configuration key.  The key should not contain the configuration's predicate.
+      * @param default Default value to use if the configuration is not set or not an integer
+      * @return The configured value or the default if no value is configured
+      */
+    def getInt(key: String, default: Int = 0) = (Try(config.getInt(getKey(key))) recoverWith { case _ => Success(default) }).get
+
+    /**
+      * Get the configuration string value for the given key.
+      *    *
+      * @param key The configuration key.  The key should not contain the configuration's predicate.
+      * @param default Default value to use if the configuration is not set
+      * @return The configured value or the default if no value is configured
+      */
+    def getString(key: String, default: String = "") = (Try(config.getString(getKey(key))) recoverWith { case _ => Success(default) }).get
 
 }
