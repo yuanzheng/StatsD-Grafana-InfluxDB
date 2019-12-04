@@ -1,17 +1,12 @@
 package com.lucas.monitoring.statsd.client
 
 import java.nio.charset.Charset
+import java.util.concurrent.{Callable, ExecutorService, Future, TimeUnit}
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 import com.lucas.monitoring.statsd.client.configuration.ClientConfiguration
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.Callable
-import java.util.concurrent.Future
-
-import com.lucas.monitoring.statsd.client.networking.{StatsDThreadFactory, UdpConnection}
+import com.lucas.monitoring.statsd.client.networking.UdpConnection
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.{Matchers, WordSpec}
 
 class NonBlockingClientTest extends WordSpec with Matchers with MockFactory {
 
@@ -43,8 +38,8 @@ class NonBlockingClientTest extends WordSpec with Matchers with MockFactory {
 
     trait ConnectedFixture extends BaseFixture {
 
-        hostname expects () returning "localhost"
-        port expects () returning 8125
+        hostname expects() returning "localhost"
+        port expects() returning 8125
 
         connection._socket.isOpen() shouldBe true
         connection._socket.isConnected() shouldBe true
@@ -79,46 +74,21 @@ class NonBlockingClientTest extends WordSpec with Matchers with MockFactory {
 
             val exception = new InterruptedException("unit.test")
 
-            nonFatalHandler expects (*) never ()
+            nonFatalHandler expects (*) never()
 
             val thrown = the[Exception] thrownBy connection.handler(exception)
             thrown.getMessage shouldBe "unit.test"
         }
     }
 
-    /* TODO: Cannot fully test
-    "executor" should {
-
-        trait Fixture {
-
-            lazy val factoryCheck = mockFunction[Unit]
-            lazy val threadFactory = {
-                Fixture.this.factoryCheck()
-                StatsDThreadFactory()
-            }
-
-            lazy val connection = new UdpConnection() {
-                override lazy val threadFactory = Fixture.this.threadFactory
-            }
-        }
-
-        "use the mixed in StatsDThreadFactory instance" in new Fixture {
-
-            factoryCheck expects ()
-
-            connection.executor
-        }
-    }
-
-     */
 
     "close" should {
         // TODO: Cannot fully test until ScalaMock 4.0 - need ability to mock classes with final methods
 
         "close the socket" in new ConnectedFixture {
 
-            (executor.shutdown _) expects ()
-            (executor.awaitTermination _) expects (*, *) returning true
+            (executor.shutdown _) expects()
+            (executor.awaitTermination _) expects(*, *) returning true
 
             connection.close()
 
@@ -128,13 +98,13 @@ class NonBlockingClientTest extends WordSpec with Matchers with MockFactory {
 
         "not close the socket if it's already closed" in new BaseFixture {
 
-            hostname expects () returning "localhost"
-            port expects () returning 8125
+            hostname expects() returning "localhost"
+            port expects() returning 8125
 
             connection._socket.close()
 
-            (executor.shutdown _) expects ()
-            (executor.awaitTermination _) expects (*, *) returning true
+            (executor.shutdown _) expects()
+            (executor.awaitTermination _) expects(*, *) returning true
 
             connection.close()
 
@@ -144,18 +114,18 @@ class NonBlockingClientTest extends WordSpec with Matchers with MockFactory {
 
         "shutdown the executor" in new ConnectedFixture {
 
-            (executor.shutdown _) expects ()
-            (executor.awaitTermination _) expects (3000, TimeUnit.MILLISECONDS) returning true
-            (executor.shutdownNow _) expects () never ()
+            (executor.shutdown _) expects()
+            (executor.awaitTermination _) expects(3000, TimeUnit.MILLISECONDS) returning true
+            (executor.shutdownNow _) expects() never()
 
             connection.close()
         }
 
         "force executor shutdown after 3 second termination timeout" in new ConnectedFixture {
 
-            (executor.shutdown _) expects ()
-            (executor.awaitTermination _) expects (3000, TimeUnit.MILLISECONDS) returning false
-            (executor.shutdownNow _) expects ()
+            (executor.shutdown _) expects()
+            (executor.awaitTermination _) expects(3000, TimeUnit.MILLISECONDS) returning false
+            (executor.shutdownNow _) expects()
 
             connection.close()
         }
